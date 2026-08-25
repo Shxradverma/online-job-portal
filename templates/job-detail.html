@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Job Details - OnlineJobPortal</title>
+
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <div class="logo">
+            Online<span>JobPortal</span>
+        </div>
+
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/#jobs">Find Jobs</a>
+            <a href="/#companies">Companies</a>
+            <a href="/#how-it-works">How It Works</a>
+
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/login/" class="login-btn">
+    Sign In
+</a>
+        </div>
+
+    </nav>
+
+
+    <main class="job-detail-page">
+
+        <div id="jobDetail">
+
+            <p class="loading">
+                Loading job details...
+            </p>
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        const jobId = "{{ job_id }}";
+
+
+        async function loadJob() {
+
+            const container =
+                document.getElementById("jobDetail");
+
+            try {
+
+                const response =
+                    await fetch("/api/jobs/" + jobId + "/");
+
+                if (!response.ok) {
+                    throw new Error("Job not found");
+                }
+
+                const job = await response.json();
+
+                container.innerHTML = `
+
+                    <div class="job-detail-header">
+
+                        <div class="company-logo large-logo">
+                            ${getInitial(job.company_name)}
+                        </div>
+
+                        <div>
+
+                            <p class="small-title">
+                                JOB OPPORTUNITY
+                            </p>
+
+                            <h1>
+                                ${escapeHTML(job.title)}
+                            </h1>
+
+                            <p class="detail-company">
+                                ${escapeHTML(
+                                    job.company_name || "Company"
+                                )}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="job-detail-grid">
+
+                        <section class="job-description">
+
+                            <h2>Job Description</h2>
+
+                            <p>
+                                ${formatText(job.description)}
+                            </p>
+
+
+                            <h2>Requirements</h2>
+
+                            <p>
+                                ${formatText(
+                                    job.requirements ||
+                                    "No requirements specified."
+                                )}
+                            </p>
+
+
+                            <h2>Responsibilities</h2>
+
+                            <p>
+                                ${formatText(
+                                    job.responsibilities ||
+                                    "No responsibilities specified."
+                                )}
+                            </p>
+
+
+                            <h2>Skills</h2>
+
+                            <div class="skills">
+                                ${formatSkills(job.skills)}
+                            </div>
+
+                        </section>
+
+
+                        <aside class="job-sidebar">
+
+                            <div class="apply-card">
+
+                                <h2>
+                                    ${formatSalary(
+                                        job.salary_min,
+                                        job.salary_max
+                                    )}
+                                </h2>
+
+                                <p>Salary</p>
+
+                                <button
+                                    class="apply-btn"
+                                    onclick="applyForJob()"
+                                >
+                                    Apply Now →
+                                </button>
+
+                            </div>
+
+
+                            <div class="job-info-card">
+
+                                <div>
+                                    <strong>📍 Location</strong>
+                                    <p>
+                                        ${escapeHTML(
+                                            job.location ||
+                                            "Not specified"
+                                        )}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <strong>💼 Job Type</strong>
+                                    <p>
+                                        ${formatJobType(job.job_type)}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <strong>🏢 Work Mode</strong>
+                                    <p>
+                                        ${formatJobType(job.work_mode)}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <strong>📈 Experience</strong>
+                                    <p>
+                                        ${formatJobType(
+                                            job.experience_level
+                                        )}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <strong>👥 Vacancies</strong>
+                                    <p>
+                                        ${job.vacancies}
+                                    </p>
+                                </div>
+
+                            </div>
+
+                        </aside>
+
+                    </div>
+                `;
+
+            } catch (error) {
+
+                console.error(error);
+
+                container.innerHTML = `
+
+                    <div class="no-jobs">
+
+                        <h2>Job Not Found</h2>
+
+                        <p>
+                            This job is not available.
+                        </p>
+
+                        <br>
+
+                        <a href="/" class="post-btn">
+                            ← Back to Jobs
+                        </a>
+
+                    </div>
+
+                `;
+            }
+        }
+
+async function applyForJob() {
+
+    const existingForm = document.getElementById("applicationForm");
+
+    if (existingForm) {
+        existingForm.remove();
+        return;
+    }
+
+    const applyCard = document.querySelector(".apply-card");
+
+    applyCard.insertAdjacentHTML(
+        "beforeend",
+        `
+        <div id="applicationForm" class="application-form">
+
+            <h3>Apply for this job</h3>
+
+            <label for="resumeSelect">
+                Select Resume
+            </label>
+
+            <select id="resumeSelect">
+                <option value="">
+                    Loading resumes...
+                </option>
+            </select>
+
+            <label for="coverLetter">
+                Cover Letter
+            </label>
+
+            <textarea
+                id="coverLetter"
+                rows="6"
+                placeholder="Write your cover letter..."
+            ></textarea>
+
+            <button
+                type="button"
+                class="submit-application-btn"
+                onclick="submitApplication()"
+            >
+                Submit Application
+            </button>
+
+            <p id="applicationMessage"></p>
+
+        </div>
+        `
+    );
+
+    await loadResumes();
+}
+async function loadResumes() {
+
+    const select =
+        document.getElementById("resumeSelect");
+
+    try {
+
+        const response =
+            await fetch("/api/resumes/");
+
+        if (!response.ok) {
+            throw new Error("Unable to load resumes");
+        }
+
+        const data =
+            await response.json();
+
+        const resumes =
+            data.results || data;
+
+        select.innerHTML = "";
+
+        if (!resumes.length) {
+
+            select.innerHTML = `
+                <option value="">
+                    No resume found
+                </option>
+            `;
+
+            return;
+        }
+
+        resumes.forEach(resume => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = resume.id;
+
+            option.textContent =
+                resume.title +
+                (resume.is_default ? " (Default)" : "");
+
+            select.appendChild(option);
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        select.innerHTML = `
+            <option value="">
+                Please login first
+            </option>
+        `;
+    }
+}
+async function submitApplication() {
+
+    const resume =
+        document.getElementById("resumeSelect").value;
+
+    const coverLetter =
+        document.getElementById("coverLetter").value.trim();
+
+    const message =
+        document.getElementById("applicationMessage");
+
+
+    if (!resume) {
+
+        message.textContent =
+            "Please select a resume.";
+
+        return;
+    }
+
+
+    if (!coverLetter) {
+
+        message.textContent =
+            "Please write a cover letter.";
+
+        return;
+    }
+
+
+    message.textContent =
+        "Submitting application...";
+
+
+    try {
+
+        const response = await fetch(
+            "/api/applications/apply/",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    job: Number(jobId),
+                    resume: Number(resume),
+                    cover_letter: coverLetter
+                })
+            }
+        );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            if (response.status === 401) {
+
+                message.textContent =
+                    "Please login before applying.";
+
+                return;
+            }
+
+            throw new Error(
+                data.detail ||
+                "Application failed."
+            );
+        }
+
+
+        message.textContent =
+            "Application submitted successfully!";
+
+
+        setTimeout(() => {
+
+            window.location.href = "/";
+
+        }, 1500);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            error.message ||
+            "Unable to submit application.";
+    }
+}
+
+        function getInitial(name) {
+
+            if (!name) {
+                return "J";
+            }
+
+            return name
+                .trim()
+                .charAt(0)
+                .toUpperCase();
+        }
+
+
+        function formatSalary(min, max) {
+
+            if (!min && !max) {
+                return "Salary not specified";
+            }
+
+            if (min && max) {
+                return "₹" +
+                    Number(min).toLocaleString("en-IN") +
+                    " – ₹" +
+                    Number(max).toLocaleString("en-IN");
+            }
+
+            if (min) {
+                return "₹" +
+                    Number(min).toLocaleString("en-IN") +
+                    "+";
+            }
+
+            return "Up to ₹" +
+                Number(max).toLocaleString("en-IN");
+        }
+
+
+        function formatJobType(type) {
+
+            if (!type) {
+                return "Not specified";
+            }
+
+            return type
+                .replaceAll("_", " ")
+                .toLowerCase()
+                .replace(
+                    /\b\w/g,
+                    letter => letter.toUpperCase()
+                );
+        }
+
+
+        function formatSkills(skills) {
+
+            if (!skills) {
+                return "<span>No skills specified</span>";
+            }
+
+            return skills
+                .split(",")
+                .map(skill => `
+                    <span>${escapeHTML(skill.trim())}</span>
+                `)
+                .join("");
+        }
+
+
+        function formatText(text) {
+
+            return escapeHTML(text || "")
+                .replace(/\n/g, "<br>");
+        }
+
+
+        function escapeHTML(value) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent = value ?? "";
+
+            return div.innerHTML;
+        }
+
+
+        loadJob();
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OnlineJobPortal</title>
+
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+    <nav class="navbar">
+
+    <div class="logo">
+        Online<span>JobPortal</span>
+    </div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="#jobs">Find Jobs</a>
+        <a href="#companies">Companies</a>
+        <a href="#how-it-works">How It Works</a>
+    </div>
+
+    <div class="nav-buttons">
+
+        <a href="/login/" class="login-btn">
+            Sign In
+        </a>
+
+        <a href="#jobs" class="post-btn">
+            Find Jobs
+        </a>
+
+    </div>
+
+</nav>
+
+
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <p class="hero-tag">
+                🚀 Thousands of opportunities waiting for you
+            </p>
+
+            <h1>
+                Find Your <span>Dream Job</span>
+            </h1>
+
+            <p class="hero-text">
+                Discover thousands of opportunities from trusted companies.
+            </p>
+
+            <div class="search-box">
+
+    <div class="search-input">
+        🔍
+        <input
+            type="text"
+            id="jobInput"
+            placeholder="Job title, skills, or keywords"
+        >
+    </div>
+
+    <div class="search-input">
+        📍
+        <input
+            type="text"
+            id="locationInput"
+            placeholder="Location"
+        >
+    </div>
+
+    <button
+        onclick="searchJobs()"
+        class="search-btn"
+    >
+        Search Jobs
+    </button>
+
+</div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <div class="section-heading">
+            <div>
+                <p class="small-title">EXPLORE OPPORTUNITIES</p>
+                <h2>Popular Categories</h2>
+            </div>
+        </div>
+
+        <div class="category-grid">
+
+            <div class="category-card">
+                <div class="category-icon">💻</div>
+                <h3>Technology</h3>
+                <p>Software & IT Jobs</p>
+            </div>
+
+            <div class="category-card">
+                <div class="category-icon">📊</div>
+                <h3>Finance</h3>
+                <p>Finance & Accounting</p>
+            </div>
+
+            <div class="category-card">
+                <div class="category-icon">🎨</div>
+                <h3>Design</h3>
+                <p>Creative & Design</p>
+            </div>
+
+            <div class="category-card">
+                <div class="category-icon">📣</div>
+                <h3>Marketing</h3>
+                <p>Marketing & Sales</p>
+            </div>
+
+            <div class="category-card">
+                <div class="category-icon">🏥</div>
+                <h3>Healthcare</h3>
+                <p>Medical & Healthcare</p>
+            </div>
+
+            <div class="category-card">
+                <div class="category-icon">🏗️</div>
+                <h3>Engineering</h3>
+                <p>Engineering Jobs</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section jobs-section" id="jobs">
+
+        <div class="section-heading">
+            <div>
+                <p class="small-title">NEW OPPORTUNITIES</p>
+                <h2>Latest Jobs</h2>
+            </div>
+        </div>
+
+        <div class="jobs-grid">
+
+            <div class="job-card">
+                <div class="company-logo">T</div>
+
+                <h3>Software Developer</h3>
+
+                <p class="company-name">
+                    Technology Company
+                </p>
+
+                <div class="job-info">
+                    <span>📍 Remote</span>
+                    <span>💼 Full-time</span>
+                </div>
+
+                <strong>₹8–15 LPA</strong>
+            </div>
+
+
+            <div class="job-card">
+                <div class="company-logo blue">D</div>
+
+                <h3>UI/UX Designer</h3>
+
+                <p class="company-name">
+                    Design Studio
+                </p>
+
+                <div class="job-info">
+                    <span>📍 Delhi</span>
+                    <span>💼 Full-time</span>
+                </div>
+
+                <strong>₹6–12 LPA</strong>
+            </div>
+
+
+            <div class="job-card">
+                <div class="company-logo orange">M</div>
+
+                <h3>Marketing Manager</h3>
+
+                <p class="company-name">
+                    Marketing Company
+                </p>
+
+                <div class="job-info">
+                    <span>📍 Mumbai</span>
+                    <span>💼 Full-time</span>
+                </div>
+
+                <strong>₹7–14 LPA</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section" id="companies">
+
+        <div class="center-heading">
+            <p class="small-title">TOP EMPLOYERS</p>
+            <h2>Featured Companies</h2>
+        </div>
+
+        <div class="company-grid">
+
+            <div class="company-card">Google</div>
+            <div class="company-card">Microsoft</div>
+            <div class="company-card">Amazon</div>
+            <div class="company-card">Adobe</div>
+            <div class="company-card">Infosys</div>
+            <div class="company-card">TCS</div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section" id="how-it-works">
+
+        <div class="center-heading">
+            <p class="small-title">SIMPLE PROCESS</p>
+            <h2>How It Works</h2>
+        </div>
+
+        <div class="steps">
+
+            <div class="step">
+                <div class="step-number">01</div>
+                <h3>Search Jobs</h3>
+                <p>Find jobs matching your skills.</p>
+            </div>
+
+            <div class="step">
+                <div class="step-number">02</div>
+                <h3>Apply Easily</h3>
+                <p>Submit your application quickly.</p>
+            </div>
+
+            <div class="step">
+                <div class="step-number">03</div>
+                <h3>Get Hired</h3>
+                <p>Connect with great companies.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="stats">
+
+        <div>
+            <h2>50K+</h2>
+            <p>Jobs Available</p>
+        </div>
+
+        <div>
+            <h2>10K+</h2>
+            <p>Companies</p>
+        </div>
+
+        <div>
+            <h2>2M+</h2>
+            <p>Job Seekers</p>
+        </div>
+
+        <div>
+            <h2>95%</h2>
+            <p>Hiring Success</p>
+        </div>
+
+    </section>
+
+
+    <section class="cta">
+
+        <h2>Ready to Find Your Next Opportunity?</h2>
+
+        <p>
+            Start exploring thousands of jobs today.
+        </p>
+
+        <a href="#jobs">
+            Explore Jobs →
+        </a>
+
+    </section>
+
+
+    <footer>
+
+        <div class="footer-content">
+
+            <div>
+                <div class="logo">
+                    Online<span>JobPortal</span>
+                </div>
+
+                <p>
+                    Connecting talented people with great opportunities.
+                </p>
+            </div>
+
+            <div>
+                <h4>Job Seekers</h4>
+                <a href="#jobs">Find Jobs</a>
+                <a href="#">My Profile</a>
+                <a href="#">Applications</a>
+            </div>
+
+            <div>
+                <h4>Employers</h4>
+                <a href="#">Post a Job</a>
+                <a href="#">Find Candidates</a>
+            </div>
+
+            <div>
+                <h4>Company</h4>
+                <a href="#">About Us</a>
+                <a href="#">Contact</a>
+            </div>
+
+        </div>
+
+        <div class="copyright">
+            © 2026 OnlineJobPortal. All rights reserved.
+        </div>
+
+    </footer>
+
+
+ <script src="{% static 'script.js' %}"></script>
+</body>
+</html>

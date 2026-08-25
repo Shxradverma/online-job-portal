@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sign In - OnlineJobPortal</title>
+
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>
+<nav class="navbar">
+
+    <div class="logo">
+        Online<span>JobPortal</span>
+    </div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/#jobs">Find Jobs</a>
+        <a href="/#companies">Companies</a>
+        <a href="/#how-it-works">How It Works</a>
+
+        <a href="/login/" class="login-nav-btn">
+            Sign In
+        </a>
+    </div>
+
+</nav>
+
+
+    <main class="login-page">
+
+        <div class="login-card">
+
+            <h1>Welcome Back 👋</h1>
+
+            <p>
+                Sign in to apply for jobs and manage your applications.
+            </p>
+
+            <form id="loginForm">
+
+                <label for="username">
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    placeholder="Enter your username"
+                    required
+                >
+
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    required
+                >
+
+
+                <button type="submit">
+                    Sign In
+                </button>
+
+                <p id="loginMessage"></p>
+
+            </form>
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        const form =
+            document.getElementById("loginForm");
+
+
+        form.addEventListener(
+            "submit",
+            async function(event) {
+
+                event.preventDefault();
+
+                const username =
+                    document.getElementById("username").value.trim();
+
+                const password =
+                    document.getElementById("password").value;
+
+                const message =
+                    document.getElementById("loginMessage");
+
+
+                message.textContent = "Signing in...";
+
+
+                try {
+
+                    const response = await fetch(
+                        "/api/auth/token/",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                username: username,
+                                password: password
+                            })
+                        }
+                    );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        message.textContent =
+                            "Invalid username or password.";
+
+                        return;
+                    }
+
+
+                    localStorage.setItem(
+                        "access_token",
+                        data.access
+                    );
+
+                    localStorage.setItem(
+                        "refresh_token",
+                        data.refresh
+                    );
+
+
+                    message.textContent =
+                        "Login successful!";
+
+
+                    setTimeout(function() {
+
+                        window.location.href = "/";
+
+                    }, 700);
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    message.textContent =
+                        "Server connection failed.";
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>

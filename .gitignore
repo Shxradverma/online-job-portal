@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+db.sqlite3
+
+media/
+
+.env
+
+test_resume.txt
+
+.vscode/
+.idea/
