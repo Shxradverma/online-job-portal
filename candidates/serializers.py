@@ -15,6 +15,16 @@ class CandidateProfileSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
+    def validate_experience_years(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Experience cannot be negative.")
+        return value
+
+    def validate_expected_salary(self, value):
+        if value is not None and value < 0:
+            raise serializers.ValidationError("Salary cannot be negative.")
+        return value
+
     class Meta:
         model = CandidateProfile
 

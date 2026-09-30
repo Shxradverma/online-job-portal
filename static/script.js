@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
    LOAD JOBS
 ========================= */
 
-async function loadJobs() {
+async function loadJobs(query = "") {
 
     const jobsContainer =
         document.getElementById("jobsContainer");
@@ -23,7 +23,7 @@ async function loadJobs() {
     try {
 
         const response =
-            await fetch("/api/jobs/");
+            await fetch("/api/jobs/?" + query);
 
         if (!response.ok) {
             throw new Error("Unable to load jobs");
@@ -31,31 +31,6 @@ async function loadJobs() {
 const data =
     await response.json();
 
-
-document.getElementById("profileUsername").textContent =
-    data.username || "My Profile";
-
-document.getElementById("profileEmail").textContent =
-    data.user_email || "";
-
-const username =
-    data.username || "U";
-
-document.getElementById("avatarLetter").textContent =
-    username.charAt(0).toUpperCase();
-
-
-document.getElementById("headline").value =
-    data.headline || "";
-
-document.getElementById("bio").value =
-    data.bio || "";
-
-document.getElementById("location").value =
-    data.location || "";
-
-document.getElementById("skills").value =
-    data.skills || "";
 
         const jobs =
             data.results || data;
@@ -77,7 +52,7 @@ document.getElementById("skills").value =
 
         jobsContainer.innerHTML = "";
 
-        jobs.slice(0, 6).forEach(job => {
+        jobs.forEach(job => {
 
             const card =
                 document.createElement("div");
@@ -87,7 +62,7 @@ document.getElementById("skills").value =
             card.innerHTML = `
 
                 <div class="company-logo">
-                    ${getCompanyInitial(job.company_name)}
+                    ${escapeHTML(getCompanyInitial(job.company_name))}
                 </div>
 
                 <h3>
@@ -139,6 +114,20 @@ document.getElementById("skills").value =
             jobsContainer.appendChild(card);
 
         });
+        if (data.next || data.previous) {
+            const navigation = document.createElement("div");
+            navigation.className = "actions";
+            for (const [label, url] of [["Previous", data.previous], ["Next", data.next]]) {
+                if (!url) continue;
+                const button = document.createElement("button");
+                button.textContent = label;
+                button.className = "search-btn";
+                button.onclick = () => loadJobs(new URL(url, location.origin).searchParams.toString());
+                navigation.appendChild(button);
+            }
+            jobsContainer.appendChild(navigation);
+        }
+
 
     }
 
@@ -189,8 +178,8 @@ function setupNavbar() {
     if (token) {
 
         // Sign In → Profile
-        loginButton.textContent = "Profile";
-        loginButton.href = "/profile/";
+        loginButton.textContent = "Dashboard";
+        loginButton.href = "/dashboard/";
 
 
         // Prevent duplicate Logout
@@ -327,4 +316,9 @@ function escapeHTML(value) {
         value ?? "";
 
     return div.innerHTML;
+}
+function searchJobs() {
+    const params = new URLSearchParams({search: document.getElementById("jobInput").value, location: document.getElementById("locationInput").value});
+    loadJobs(params.toString());
+    document.getElementById("jobsContainer").scrollIntoView({behavior:"smooth"});
 }

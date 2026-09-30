@@ -6,6 +6,9 @@ from .models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
+    fieldsets = UserAdmin.fieldsets + (("Portal", {"fields": ("role", "phone", "is_email_verified")}),)
+    add_fieldsets = UserAdmin.add_fieldsets + (("Portal", {"fields": ("email", "role")}),)
+
 
     list_display = (
         "username",

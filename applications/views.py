@@ -1,3 +1,8 @@
+from accounts.permissions import IsCandidate, IsRecruiter
+from recruiters.serializers import ApplicationStatusSerializer
+from rest_framework import serializers
+from rest_framework.response import Response
+from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import F
 
@@ -5,29 +10,25 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Application
-from .serializers import ApplicationSerializer
+from .serializers import ApplicationSerializer, RecruiterApplicationSerializer
 
 
 class ApplyJobAPIView(generics.CreateAPIView):
     serializer_class = ApplicationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def perform_create(self, serializer):
-        application = serializer.save(
-            candidate=self.request.user
-        )
-
-        # Increase job application counter
-        type(application.job).objects.filter(
-            id=application.job.id
-        ).update(
-            applications_count=F("applications_count") + 1
-        )
+        try:
+            with transaction.atomic():
+                application = serializer.save(candidate=self.request.user)
+                type(application.job).objects.filter(id=application.job.id).update(applications_count=F("applications_count") + 1)
+        except IntegrityError:
+            raise serializers.ValidationError("You have already applied to this job.")
 
 
 class MyApplicationsAPIView(generics.ListAPIView):
     serializer_class = ApplicationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_queryset(self):
         return (
@@ -43,7 +44,7 @@ class MyApplicationsAPIView(generics.ListAPIView):
 
 class ApplicationDetailAPIView(generics.RetrieveAPIView):
     serializer_class = ApplicationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_queryset(self):
         return (
@@ -59,22 +60,26 @@ class ApplicationDetailAPIView(generics.RetrieveAPIView):
 
 class WithdrawApplicationAPIView(generics.UpdateAPIView):
     serializer_class = ApplicationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_queryset(self):
         return Application.objects.filter(
             candidate=self.request.user
         )
 
-    def perform_update(self, serializer):
-        serializer.save(
-            status=Application.Status.WITHDRAWN
-        )
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        application = self.get_queryset().select_for_update().get(pk=self.get_object().pk)
+        if application.status in [Application.Status.HIRED, Application.Status.REJECTED]:
+            raise serializers.ValidationError("This application is already finalized.")
+        application.status = Application.Status.WITHDRAWN
+        application.save(update_fields=["status", "updated_at"])
+        return Response(self.get_serializer(application).data)
 
 
 class RecruiterApplicationsAPIView(generics.ListAPIView):
-    serializer_class = ApplicationSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = RecruiterApplicationSerializer
+    permission_classes = [IsRecruiter]
 
     def get_queryset(self):
         return (
@@ -90,8 +95,8 @@ class RecruiterApplicationsAPIView(generics.ListAPIView):
 
 
 class RecruiterJobApplicationsAPIView(generics.ListAPIView):
-    serializer_class = ApplicationSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = RecruiterApplicationSerializer
+    permission_classes = [IsRecruiter]
 
     def get_queryset(self):
         job_id = self.kwargs["job_id"]
@@ -112,8 +117,16 @@ class RecruiterJobApplicationsAPIView(generics.ListAPIView):
 
 
 class UpdateApplicationStatusAPIView(generics.UpdateAPIView):
-    serializer_class = ApplicationSerializer
-    permission_classes = [IsAuthenticated]
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    def get_object(self):
+        instance = super().get_object()
+        return self.get_queryset().select_for_update().get(pk=instance.pk)
+
+    serializer_class = ApplicationStatusSerializer
+    permission_classes = [IsRecruiter]
 
     def get_queryset(self):
         return (

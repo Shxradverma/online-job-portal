@@ -1,3 +1,4 @@
+from .views import ResumeDownloadAPIView
 from django.urls import path
 
 from .views import (
@@ -7,6 +8,7 @@ from .views import (
 
 
 urlpatterns = [
+    path("<int:pk>/download/", ResumeDownloadAPIView.as_view()),
     path(
         "",
         ResumeListCreateAPIView.as_view(),

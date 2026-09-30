@@ -9,7 +9,7 @@
     <title>OnlineJobPortal</title>
 
     <link rel="stylesheet" href="{% static 'style.css' %}">
-</head>
+<script src="{% static 'auth.js' %}"></script></head>
 <body>
 
     <nav class="navbar">
@@ -31,7 +31,7 @@
             Sign In
         </a>
 
-        <a href="#jobs" class="post-btn">
+        <a href="/dashboard/" class="post-btn">
             Find Jobs
         </a>
 
@@ -321,14 +321,14 @@
             <div>
                 <h4>Job Seekers</h4>
                 <a href="#jobs">Find Jobs</a>
-                <a href="#">My Profile</a>
-                <a href="#">Applications</a>
+                <a href="/profile/">My Profile</a>
+                <a href="/dashboard/">Applications</a>
             </div>
 
             <div>
                 <h4>Employers</h4>
-                <a href="#">Post a Job</a>
-                <a href="#">Find Candidates</a>
+                <a href="/dashboard/">Post a Job</a>
+                <a href="/dashboard/">Manage Applicants</a>
             </div>
 
             <div>
