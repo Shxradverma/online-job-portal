@@ -3,7 +3,9 @@ from django.db.models import Q
 
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from accounts.permissions import IsCandidate
+from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from .models import Job, SavedJob
@@ -23,7 +25,7 @@ class JobSearchAPIView(generics.ListAPIView):
     def get_queryset(self):
         queryset = (
             Job.objects
-            .filter(status=Job.Status.PUBLISHED)
+            .filter(status=Job.Status.PUBLISHED).filter(Q(application_deadline__isnull=True) | Q(application_deadline__gte=timezone.localdate()))
             .select_related("company", "recruiter")
         )
 
@@ -80,6 +82,10 @@ class JobSearchAPIView(generics.ListAPIView):
                 company__name__icontains=company
             )
 
+        for key in ["salary_min", "salary_max"]:
+            raw = params.get(key)
+            if raw and (not raw.isdigit() or len(raw) > 15):
+                raise ValidationError({key: "Enter a non-negative salary."})
         # Salary
         if salary_min:
             queryset = queryset.filter(
@@ -138,7 +144,7 @@ class JobDetailAPIView(generics.RetrieveAPIView):
 
 class SaveJobAPIView(generics.CreateAPIView):
     serializer_class = SavedJobSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def create(self, request, *args, **kwargs):
         job_id = request.data.get("job")
@@ -154,7 +160,7 @@ class SaveJobAPIView(generics.CreateAPIView):
                 id=job_id,
                 status=Job.Status.PUBLISHED,
             )
-        except Job.DoesNotExist:
+        except (Job.DoesNotExist, ValueError, TypeError):
             return Response(
                 {"detail": "Published job not found."},
                 status=status.HTTP_404_NOT_FOUND,
@@ -184,7 +190,7 @@ class SaveJobAPIView(generics.CreateAPIView):
 
 class SavedJobListAPIView(generics.ListAPIView):
     serializer_class = SavedJobSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_queryset(self):
         return (
@@ -196,7 +202,7 @@ class SavedJobListAPIView(generics.ListAPIView):
 
 class DeleteSavedJobAPIView(generics.DestroyAPIView):
     serializer_class = SavedJobSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_queryset(self):
         return SavedJob.objects.filter(

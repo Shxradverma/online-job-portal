@@ -14,7 +14,7 @@
 
    <link rel="stylesheet" href="{% static 'style.css' %}?v=2">
 
-</head>
+<script src="{% static 'auth.js' %}"></script></head>
 
 <body>
 
@@ -371,7 +371,7 @@
                 <input
                     type="file"
                     id="resumeFile"
-                    accept=".pdf,.doc,.docx"
+                    accept=".pdf"
                     required
                 >
 
@@ -980,8 +980,8 @@ async function loadResumes() {
                     <div class="resume-actions">
 
                         <a
-                            href="${resume.file}"
-                            target="_blank"
+                            href="#" onclick="downloadResume(event, ${resume.id})"
+                            
                             class="resume-view-btn"
                         >
                             View
@@ -1119,7 +1119,7 @@ document.getElementById(
                 console.error(data);
 
                 throw new Error(
-                    "Upload failed"
+                    Object.entries(data).map(([key, value]) => key + ": " + value).join(" ")
                 );
 
             }
@@ -1150,7 +1150,7 @@ document.getElementById(
             console.error(error);
 
             message.textContent =
-                "Unable to upload resume.";
+                error.message || "Unable to upload resume.";
 
         }
 
@@ -1222,6 +1222,16 @@ async function deleteResume(id) {
 
     </script>
 
-</body>
+<script>
+async function downloadResume(event, id) {
+ event.preventDefault();
+ try {
+  const response = await fetch('/api/resumes/'+id+'/download/', {headers:{Authorization:'Bearer '+localStorage.getItem('access_token')}});
+  if(!response.ok) throw new Error('Unable to download resume. Please sign in again.');
+  const url=URL.createObjectURL(await response.blob()), link=document.createElement('a');
+  link.href=url;link.download='resume.pdf';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ } catch(error) { document.getElementById('resumeMessage').textContent=error.message; }
+}
+</script></body>
 
 </html>

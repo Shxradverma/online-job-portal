@@ -1,0 +1,35 @@
+# This blueprint provisions PAID resources; review current costs before applying.
+services:
+  - type: web
+    name: online-job-portal
+    runtime: python
+    plan: starter
+    buildCommand: bash build.sh
+    startCommand: bash start.sh
+    healthCheckPath: /health/
+    disk:
+      name: resumes
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: TRUST_PROXY
+        value: "True"
+      - key: MEDIA_ROOT
+        value: /var/data/media
+      - key: DATABASE_URL
+        fromDatabase:
+          name: online-job-portal-db
+          property: connectionString
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.12.8
+databases:
+  - name: online-job-portal-db
+    plan: basic-256mb
+    databaseName: jobportal
+    user: jobportal

@@ -27,7 +27,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "resume",
             "cover_letter",
             "status",
-            "recruiter_notes",
             "applied_at",
             "updated_at",
         ]
@@ -35,7 +34,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "candidate",
-            "recruiter_notes",
+            "status",
             "applied_at",
             "updated_at",
         ]
@@ -46,7 +45,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
                 "You can only apply to published jobs."
             )
 
+        from django.utils import timezone
+        if job.application_deadline and job.application_deadline < timezone.localdate():
+            raise serializers.ValidationError("The application deadline has passed.")
         return job
+
+    def validate_resume(self, resume):
+        if resume and resume.candidate_id != self.context["request"].user.id:
+            raise serializers.ValidationError("You can only use your own resume.")
+        return resume
 
     def validate(self, attrs):
         request = self.context.get("request")
@@ -67,3 +74,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
                 )
 
         return attrs
+
+class RecruiterApplicationSerializer(ApplicationSerializer):
+    candidate_name = serializers.CharField(source="candidate.username", read_only=True)
+    candidate_email = serializers.EmailField(source="candidate.email", read_only=True)
+    class Meta(ApplicationSerializer.Meta):
+        fields = ApplicationSerializer.Meta.fields + ["candidate_name", "candidate_email", "recruiter_notes"]
+        read_only_fields = fields

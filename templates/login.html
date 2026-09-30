@@ -9,7 +9,7 @@
     <title>Sign In - OnlineJobPortal</title>
 
     <link rel="stylesheet" href="{% static 'style.css' %}">
-</head>
+<script src="{% static 'auth.js' %}"></script></head>
 
 <body>
 <nav class="navbar">
@@ -42,7 +42,7 @@
                 Sign in to apply for jobs and manage your applications.
             </p>
 
-            <form id="loginForm">
+            <p><a href="/password-reset/">Forgot password?</a></p><p>New here? <a href="/register/">Create an account</a></p><form id="loginForm">
 
                 <label for="username">
                     Username
@@ -155,7 +155,7 @@
 
                     setTimeout(function() {
 
-                        window.location.href = "/";
+                        window.location.href = "/dashboard/";
 
                     }, 700);
 

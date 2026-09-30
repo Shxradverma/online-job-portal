@@ -1,5 +1,5 @@
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from accounts.permissions import IsCandidate
 
 from jobs.models import Job
 from candidates.models import CandidateProfile
@@ -12,7 +12,7 @@ from .services import create_or_update_job_match
 class MyJobMatchesAPIView(generics.ListAPIView):
 
     serializer_class = JobMatchSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def get_queryset(self):
         return JobMatch.objects.filter(
@@ -26,7 +26,7 @@ class MyJobMatchesAPIView(generics.ListAPIView):
 class GenerateJobMatchAPIView(generics.CreateAPIView):
 
     serializer_class = JobMatchSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCandidate]
 
     def create(self, request, *args, **kwargs):
         job_id = request.data.get("job")
@@ -47,7 +47,7 @@ class GenerateJobMatchAPIView(generics.CreateAPIView):
                 id=job_id,
                 status=Job.Status.PUBLISHED,
             )
-        except Job.DoesNotExist:
+        except (Job.DoesNotExist, ValueError, TypeError):
             from rest_framework.response import Response
             from rest_framework import status
 

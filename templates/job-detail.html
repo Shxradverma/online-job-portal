@@ -10,7 +10,7 @@
     <title>Job Details - OnlineJobPortal</title>
 
     <link rel="stylesheet" href="{% static 'style.css' %}">
-</head>
+<script src="{% static 'auth.js' %}"></script></head>
 
 <body>
 
@@ -300,7 +300,7 @@ async function loadResumes() {
     try {
 
         const response =
-            await fetch("/api/resumes/");
+            await fetch("/api/resumes/", {headers:{Authorization:"Bearer " + localStorage.getItem("access_token")}});
 
         if (!response.ok) {
             throw new Error("Unable to load resumes");
@@ -392,7 +392,8 @@ async function submitApplication() {
                 method: "POST",
 
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("access_token")
                 },
 
                 body: JSON.stringify({
